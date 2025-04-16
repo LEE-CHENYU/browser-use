@@ -1,11 +1,13 @@
 agent_task: |
-  Complete the job application by navigating pages and filling the forms with the following information, follow the sequence of the form, not the order of the following json.
+  Complete the job application by navigating through each page and filling out the form fields according to the website's flow. Try to navigate to the next page first to identify which fields are mandatory (usually marked with * or highlighted), and focus on completing those required fields first.
 
-  {{% IMPORTANT %}} You can skip those without *, meaning the field is optional.
+  {{% IMPORTANT %}} Only fill in mandatory fields (usually marked with *) and skip optional fields unless specifically instructed otherwise.
 
   {{% IMPORTANT %}} If at any point there is a request to upload a resume or CV, please upload the file located at: {resume_file_path}
 
-  {{% IMPORTANT %}} If a field is already filled with correct information, do not input anything in that field.
+  {{% IMPORTANT %}} If a field is already filled with correct information, do not modify that field.
+
+  {{% IMPORTANT %}} After completing each page, take a screenshot before proceeding to the next page.
 
   {{
     "personal_info": {
@@ -22,7 +24,10 @@ agent_task: |
     "education": [
       {
         "institution": "哥伦比亚大学",
-        "degree": "应用分析 理学硕士",
+        "Major": "统计与大数据",
+        "degree": "理学硕士",
+        "level of education": "硕士",
+        "gpa": "3.73/4.0",
         "location": "纽约",
         "period": "预计毕业时间：2023年2月",
         "courses": "研究设计、时间序列及人工智能；选修：盈利质量与基本面分析、并购会计、全球宏观政策、国际政治经济学",
