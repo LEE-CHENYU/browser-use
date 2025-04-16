@@ -265,25 +265,32 @@ class AgentTestFramework:
         return self.logger.get_summary()
 
 
-async def generate_test_positions(num_positions: int = 100) -> List[Dict[str, Any]]:
+async def generate_test_positions(num_positions: int = 100, recent_percentage: float = 10.0) -> List[Dict[str, Any]]:
     """
     Generate test positions for the agent.
     
     Args:
         num_positions: Number of test positions to generate
+        recent_percentage: Percentage of newest jobs to include (1-100)
         
     Returns:
         List of position configurations
     """
-    # Load URLs from the sample file
     positions = []
     
     try:
+        # Import the sampling module
+        from sample_recent_jobs import sample_recent_jobs
+        
+        # Generate a fresh sample of the most recent jobs
+        # Use percentage for filtering but exact count for limiting
+        sample_recent_jobs(percentage=recent_percentage, count=num_positions)
+        
         # Load the sample URLs from the JSON file
         with open('sample_urls.json', 'r') as f:
             urls = json.load(f)
         
-        # Use up to num_positions URLs
+        # Create positions from the URLs
         for i in range(min(num_positions, len(urls))):
             position = {
                 "id": i,
@@ -297,7 +304,7 @@ async def generate_test_positions(num_positions: int = 100) -> List[Dict[str, An
             positions.append(position)
     except Exception as e:
         # Fallback to example.com if there's an error loading the URLs
-        logging.warning(f"Error loading sample URLs: {e}. Using fallback URLs.")
+        logging.warning(f"Error loading or sampling URLs: {e}. Using fallback URLs.")
         for i in range(num_positions):
             position = {
                 "id": i,
@@ -319,7 +326,8 @@ async def run_agent_tests(
     browser_context_config: Optional[BrowserContextConfig] = None,
     log_dir: str = "logs",
     max_steps_per_test: int = 20,
-    parallel_tests: int = 1
+    parallel_tests: int = 1,
+    recent_percentage: float = 10.0
 ) -> Dict[str, Any]:
     """
     Run a complete test suite for an agent.
@@ -347,7 +355,7 @@ async def run_agent_tests(
     )
     
     # Generate test positions
-    positions = await generate_test_positions(num_positions)
+    positions = await generate_test_positions(num_positions, recent_percentage)
     
     # Default agent factory if none provided
     if agent_factory is None:
@@ -373,7 +381,7 @@ async def run_agent_tests(
 
 
 # Example usage with cookie_agent2_v1.py as the execution core
-async def main(num_positions=10, parallel_tests=4, headless=False, max_steps=20):
+async def main(num_positions=10, parallel_tests=4, headless=False, max_steps_per_test=20, recent_percentage=10.0):
     # Import the custom agent module
     import yaml
     import os
@@ -395,6 +403,9 @@ async def main(num_positions=10, parallel_tests=4, headless=False, max_steps=20)
         # Create a custom task using the template from prompt.yaml
         # But replace the URL with the one from the test position
         task = agent_task_template.replace("https://q.yingjiesheng.com/jobdetail/157805378.html", job_url)
+        
+        # Prepend navigation instructions to the task
+        task = f"First, navigate to {job_url} to access the job application.\n\n" + task
         
         # Create LLM (same as cookie_agent2_v1.py)
         api_key = os.getenv("OPENAI_API_KEY")
@@ -429,8 +440,9 @@ async def main(num_positions=10, parallel_tests=4, headless=False, max_steps=20)
         agent_factory=cookie_agent_factory,
         browser_config=browser_config,
         browser_context_config=browser_context_config,
-        max_steps_per_test=max_steps,
-        parallel_tests=parallel_tests
+        max_steps_per_test=max_steps_per_test,
+        parallel_tests=parallel_tests,
+        recent_percentage=recent_percentage
     )
     
     print(f"Tests completed with {results['successful_tests']}/{results['total_tests']} successes")
