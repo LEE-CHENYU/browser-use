@@ -191,3 +191,7 @@ gcp-login.json
 *.jsonl
 
 uv.lock
+
+/cookies
+/resume
+temp.cookies
