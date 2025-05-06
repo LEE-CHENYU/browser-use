@@ -20,7 +20,7 @@ def parse_date(date_str):
         # Return a very old date if parsing fails
         return datetime(1900, 1, 1)
 
-def sample_recent_jobs(percentage=10, count=None, output_file="sample_urls.json", input_file="extracted_job_details.json", headless=True, random_sampling=False):
+def sample_recent_jobs(percentage=10, count=None, output_file="sample_urls.json", input_file="aggregated_job_details.json", headless=True, random_sampling=False):
     """
     Sample job listings based on either update_time or random selection.
     

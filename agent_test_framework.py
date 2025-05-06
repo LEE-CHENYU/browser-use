@@ -635,7 +635,7 @@ async def generate_test_positions(num_positions: int = 100, recent_percentage: f
         )
         
         # Load the sample URLs from the JSON file
-        with open('sample_urls.json', 'r') as f:
+        with open('browser-use/sample_urls.json', 'r') as f:
             urls = json.load(f)
         
         # Create positions from the URLs
@@ -902,10 +902,18 @@ async def main(num_positions=10, parallel_tests=4, headless=False, max_steps_per
     )
     
     # Use the exact same browser context config as in cookie_agent2_v1.py
+    # Match cookie_agent2_v1.py's cookie handling exactly
+    cookies_dir = "/Users/chenyusu/vscode/jobseeker/happyhunting_app/browser-use/cookies"
+    cookies_files = [f for f in os.listdir(cookies_dir) if f.endswith('.json')]
+    cookies_file = os.path.join(cookies_dir, cookies_files[0]) if cookies_files else "temp_cookies.json"
+    
+    # Print resolved cookie file path for debugging
+    print(f"Using cookies file: {os.path.abspath(cookies_file)}")
+    
     browser_context_config = BrowserContextConfig(
         highlight_elements=True,
         viewport_expansion=1000,
-        cookies_file="temp_cookies.json"
+        cookies_file=cookies_file
     )
     
     # Run tests with the cookie_agent2_v1 configuration
@@ -935,7 +943,7 @@ if __name__ == "__main__":
     parser.add_argument("--headless", action="store_true", default=False, help="Run browser in headless mode (default: False)")
     parser.add_argument("--max_steps_per_test", type=int, default=20, help="Maximum steps per test")
     parser.add_argument("--recent_percentage", type=float, default=10.0, help="Percentage of jobs to include")
-    parser.add_argument("--input", type=str, default="extracted_job_details_0417.json", help="Input file for extracted job details")
+    parser.add_argument("--input", type=str, default="aggregated_job_details.json", help="Input file for extracted job details")
     parser.add_argument("--random", action="store_true", default=False, help="Use random sampling instead of date-based sampling")
     parser.add_argument("--record_every_step", action="store_true", default=False, help="Save screenshots for every step in the agent's history")
     args = parser.parse_args()
