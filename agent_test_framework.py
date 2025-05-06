@@ -762,7 +762,16 @@ async def main(num_positions=10, parallel_tests=4, headless=False, max_steps_per
     load_dotenv()
     
     # Define the resume file path
-    resume_file_path = "/Users/chenyusu/Documents/GitHub/browser-use/李宸宇简历.docx"
+    resume_folder = "/Users/chenyusu/vscode/jobseeker/happyhunting_app/browser-use/resume"
+    if os.path.exists(resume_folder):
+        docx_files = [f for f in os.listdir(resume_folder) if f.endswith('.docx')]
+        resume_file_path = os.path.join(resume_folder, docx_files[0]) if docx_files else None
+    else:
+        resume_file_path = None
+    
+    # Fallback to the path specified in cookie_agent2_v1.py if no files found
+    if not resume_file_path:
+        resume_file_path = "/Users/chenyusu/Documents/GitHub/browser-use/李宸宇简历.docx"
     
     # Verify the file exists
     if not os.path.exists(resume_file_path):
@@ -870,8 +879,9 @@ async def main(num_positions=10, parallel_tests=4, headless=False, max_steps_per
     
     # Simple factory that creates the agent with the exact same configuration as cookie_agent2_v1.py
     def cookie_agent_factory(browser, context, position):
-        # Load the task from prompt.yaml
-        with open("prompt.yaml", "r", encoding="utf-8") as f:
+        # Load the task from prompt.yaml with absolute path
+        prompt_yaml_path = os.path.join("/Users/chenyusu/vscode/jobseeker/happyhunting_app/browser-use", "prompt.yaml")
+        with open(prompt_yaml_path, "r", encoding="utf-8") as f:
             prompt_data = yaml.safe_load(f)
         agent_task = prompt_data["agent_task"]
         
@@ -884,6 +894,9 @@ async def main(num_positions=10, parallel_tests=4, headless=False, max_steps_per
             raise ValueError("Please set the OPENAI_API_KEY environment variable")
         
         llm = ChatOpenAI(model="gpt-4.1")
+        
+        # Print the task for debugging
+        print(f"Agent task: {agent_task[:100]}...")
         
         # Create agent with exactly the same configuration as cookie_agent2_v1.py
         # but with file upload capabilities
